@@ -3,9 +3,10 @@ function Assignment1
 
 path = 'Data\00125v';
 type = '.jpg';
-r = imread(strcat(path , '_R' , type));
-g = imread (strcat(path , '_G' , type));
-b = imread(strcat(path , '_B' , type));
+h = fspecial('gauss', [1 20])
+r = im2double(imread(strcat(path , '_R' , type)));
+g = im2double(imread(strcat(path , '_G' , type)));
+b = im2double(imread(strcat(path , '_B' , type)));
 
 coloredImage = alignChannels(r, g, b);
 
@@ -26,8 +27,31 @@ function[coloredImage]  = alignChannels(r, g, b)
 
 
 %% TODO: Calculate real colored image
-coloredImage = cat(3, r, g, b);
+[width, height] = size(r(:,:));
+max = -Inf;
+min = Inf;
+for i=1:width - 29
+    for j=1:height - 29
+       
+       r_window = r(i : i+29 , j : j+29);
+       g_window = g(i : i+29 , j : j+29);
+       b_window = b(i : i+29 , j : j+29);
+       % g_window = g(x_min:x_max , y_min:y_max);
+        ncc = corr2(r_window, g_window);
+        if (ncc > max)
+            max = ncc;
+        end
+        if (ncc < min)
+            min = ncc;
+        end
+    end
 end
+
+
+coloredImage = cat(3, r, g, b);
+
+end
+
 
 %% Plots the given images into a figure next to each other.
 function plotResults(r, g, b, coloredImage)
