@@ -3,9 +3,9 @@ function Assignment2
 img = im2double(imread('Data\mm.jpg'));
 
 % Create Feature Vector
-features = createFeatureVector(img, true);
+features = createFeatureVector(img, false);
 % Perform kNN
-[classification, centroids] = kNN(features, 2, 1);
+[classification, centroids] = kNN(features, 5, 4);
 % Plot Results
 plotResults(classification, img, centroids);
 end
