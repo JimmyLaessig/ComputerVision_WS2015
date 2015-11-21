@@ -1,11 +1,11 @@
 function Assignment2
 
-img = im2double(imread('Data\mm.jpg'));
+img = im2double(imread('Data\future.jpg'));
 
 % Create Feature Vector
-features = createFeatureVector(img, true);
+features = createFeatureVector(img, false);
 % Perform kNN
-[classification, centroids] = kNN(features, 2, 1);
+[classification, centroids] = kNN(features, 4, 10);
 % Plot Results
 plotResults(classification, img, centroids);
 end
@@ -28,17 +28,17 @@ b = tmp(:);
 features = [r g b];
 if(useSpatial == true)
     
-    % Create array for all x (height) indices 
+    % Create array for all x (height) indices
     % The array for a 3x2 image look like [1,2,3,1,2,3]
     x = (1:1:height) / height;
     x = repmat(x, width, 1)';   % For each row
     
     % Create array for all y (width) indices
     % The array for a 3x2 image look like [1,1,1,2,2,2]
-
+    
     y = (1:1:width)' / width;
     y = repmat(y, 1, height)';
-   
+    
     features = [r g b x(:) y(:)];
 end
 end
@@ -74,13 +74,13 @@ for i = 1:maxIterations
     end
     
     % Get Min distances and the indices (= class Label)
-    [~, classification] = min(distances,[],  2);       
-       
+    [~, classification] = min(distances,[],  2);
+    
     % Calculate new Centroids
     newCentroids = calculateCentroids(classification, samples, k, numSamples, numFeatures);
     %
     % Terminate algorithm if no change occured or max iterations is reached
-    if(centroidsChanged(centroids, newCentroids, 0.1) == false)
+    if(centroidsChanged(centroids, newCentroids, 0.01) == false)
         break;
     end
     % Apply new Centroids
@@ -125,7 +125,15 @@ end
 %% Determines if the new centroids differ from the old centroids, capped by threshold
 function[changed] = centroidsChanged(oldCentroids, newCentroids, threshold)
 % TODO: Implement this function correctly
-changed = true;
+k = size(oldCentroids, 2);
+% Calculate differences of old to new centroids
+diff = sqrt(sum(abs((oldCentroids - newCentroids)').^2,2));
+
+if(max(diff) < threshold)
+    changed = false;
+else
+    changed = true;
+end
 end
 
 
@@ -143,10 +151,9 @@ for i=0:numSamples - 1
     y = floor(i / height) + 1;
     
     class = classification(i+1);
-    
-        kMeansImage(x, y, 1) = centroids(class, 1);
-        kMeansImage(x, y, 2) = centroids(class, 2);
-        kMeansImage(x, y, 3) = centroids(class, 3);
+    kMeansImage(x, y, 1) = centroids(class, 1);
+    kMeansImage(x, y, 2) = centroids(class, 2);
+    kMeansImage(x, y, 3) = centroids(class, 3);
 end
 
 figure;
@@ -156,5 +163,5 @@ title('Color Image');
 
 subplot(1, 2, 2);
 imshow(kMeansImage);
-title(['kMeans : k = ' , sprintf('%d', size(centroids, 2))]);
+title(['kMeans : k = ' , sprintf('%d', size(centroids, 1))]);
 end
