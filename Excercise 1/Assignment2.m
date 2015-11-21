@@ -1,11 +1,11 @@
 function Assignment2
 
-img = im2double(imread('Data\mm.jpg'));
+img = im2double(imread('Data\future.jpg'));
 
 % Create Feature Vector
 features = createFeatureVector(img, false);
 % Perform kNN
-[classification, centroids] = kNN(features, 5, 4);
+[classification, centroids] = kNN(features, 5, 1);
 % Plot Results
 plotResults(classification, img, centroids);
 end
