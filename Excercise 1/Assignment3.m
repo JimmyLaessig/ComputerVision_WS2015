@@ -1,5 +1,8 @@
 function Assignment3
-img = im2double(imread('Data\butterfly.jpg'));
+img = im2double(imread('Data\tree.jpg'));
+if size(img,3) == 3
+    img = rgb2gray(img);
+end
 logBlobDetector(img);
 end
 
@@ -12,7 +15,7 @@ k = 1.25; % multiplication value
 level = 10;
 scale_space = zeros(size(img,1),size(img,2),level);
 max_space = scale_space;
-threshold = 0.1;
+threshold = 0.001;
 suppression_size = 10;
 
 for i = 1 : level 
