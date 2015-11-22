@@ -1,6 +1,8 @@
-function Assignment2
+function Assignment2(pic_name, k, spatial)
 
-img = im2double(imread('Data\future.jpg'));
+img = im2double(imread(strcat('Data\', pic_name)));
+
+
 
 % Create Feature Vector
 features = createFeatureVector(img, false);
