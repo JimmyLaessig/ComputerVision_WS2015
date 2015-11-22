@@ -5,7 +5,7 @@
 
 # Windows default autosave extension
 *.asv 
-
+*.db
 # OSX / *nix default autosave extension
 *.m~
 
