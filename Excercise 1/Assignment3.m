@@ -1,90 +1,89 @@
 function Assignment3
-img = im2double(imread('Data/butterfly.jpg'));
-blobDetection(img, 2, 1.25, 10);
+img = im2double(imread('Data\tree.jpg'));
+if size(img,3) == 3
+    img = rgb2gray(img);
+end
+logBlobDetector(img);
 end
 
+function logBlobDetector( img )
+% Performs the LoG Blob Detector
+% img ... the image for the blob detection
 
-function blobDetection(img, sigma_0, k, levels)
-%INPUT
-% img ... the image to detect the scales from
-% sigma_0 ... the start sigma for the LoG Filter
-% k ... the scale factor for sigma
-% levels ... the number of levels
+sigma = 2; % initial scale
+k = 1.25; % multiplication value
+level = 10;
+scale_space = zeros(size(img,1),size(img,2),level);
+max_space = scale_space;
+threshold = 0.001;
+suppression_size = 10;
 
-%OUTPUT
-[height,width] = size(img);
-% levels - number of levels in the scale space
-scale_space = zeros(height,width,levels);
-sigma_k = sigma_0 / k;
-% Calculate filtered image for each k
-for i = 1:levels
-    % Scale sigma
-    sigma_k = floor(sigma_k * k);
-    %sigma_k = sigma_0;
-    log_filter = fspecial('log', 2 * 3 * sigma_k + 1, sigma_k);
-    log_filter = log_filter * (sigma_k * sigma_k); % Normalize filter by multiplying with sigma^2
-    
-    filtered_image = imfilter(img, log_filter, 'same', 'replicate');
-    
-    scale_space(:,:,i) = filtered_image(:,:);
+for i = 1 : level 
+    sigma2 = sigma * k^(i-1);
+    filter_size =  2*ceil(3*sigma2)+1; % filter size
+    log_filter = fspecial('log', filter_size, sigma2) * sigma2^2;
+    filtered = imfilter(img, log_filter, 'same', 'replicate');
+    filtered = filtered .^2;
+    scale_space(:,:,i) = filtered;   
 end
 
-% Non Maximum Suppresion
-for x=1:height
-    for y=1:width
-        for h = 1:levels
-            neighborhood = zeros(26);
-            
-            % Value of the point at level h
-            value = abs(scale_space(x, y, h));
-            
-            % Search within a 3x3x3 neighborhood for local maxima
-            indices = zeros(26, 3);
-            
-            %% Level - 1
-            if(x > 1 && y > 1 && h > 1)          indices(1,:) = [x - 1, y - 1, h - 1]; end
-            if(x > 1 && h > 1)                   indices(2,:) = [x - 1, y    , h - 1]; end
-            if(x > 1 && y < width && h > 1)      indices(3,:) = [x - 1, y + 1, h - 1]; end
-            
-            if(y > 1 && h > 1)                   indices(4,:) = [x, y - 1, h - 1];     end
-            if(h > 1)                            indices(5,:) = [x, y    , h - 1];     end
-            if(y < width && h > 1)               indices(6,:) = [x, y + 1, h - 1];     end
-            
-            if(x < height && y > 1 && h > 1)     indices(7,:) = [x + 1, y - 1, h - 1]; end
-            if(x < height && h > 1)              indices(8,:) = [x + 1, y    , h - 1]; end
-            if(x < height && y < width && h > 1) indices(9,:) = [x + 1, y + 1, h - 1]; end
-            
-            %% Same Level
-            if(x > 1 && y > 1)     indices(10,:) = [x - 1 , y - 1, h]; end
-            if(x > 1)              indices(11,:) = [x - 1 , y    , h]; end
-            if(x > 1 && y < width) indices(12,:) = [x - 1 , y + 1, h]; end
-            
-            if(y > 0)              indices(13,:) = [x, y - 1, h]; end
-                                 %%indices(14,:) = [x, y    , h]; %% current value
-            if(y < width)          indices(15,:) = [x, y + 1, h]; end           
-            
-            if(x < height && y > 0)     indices(16,:) = [x + 1 , y - 1, h]; end
-            if(x < height)              indices(17,:) = [x + 1 , y    , h]; end
-            if(x < height && y < width) indices(18,:) = [x + 1 , y + 1, h]; end
-            
-            %% Level + 1
-            if(x > 1 && y > 1 && h < levels)     indices(19,:) = [x - 1 , y - 1, h + 1]; end
-            if(x > 1 &&  h < levels)             indices(20,:) = [x - 1 , y    , h + 1]; end
-            if(x > 1 && y < width && h < levels) indices(21,:) = [x - 1 , y + 1, h + 1]; end
-            
-            if( y > 1 && h < levels)     indices(22,:) = [x, y - 1, h + 1]; end
-            if( h < levels)              indices(23,:) = [x, y    , h + 1]; end
-            if( y < width && h < levels) indices(24,:) = [x, y + 1, h + 1]; end
-            
-            if(x < height && y > 1 && h < levels)     indices(25,:) = [x + 1 , y - 1, h + 1]; end
-            if(x < height && h < levels)              indices(26,:) = [x + 1 , y    , h + 1]; end
-            if(x < height && y < width && h < levels) indices(27,:) = [x + 1 , y + 1, h + 1]; end
-            
-            % Filter out illegal indices
-            
-        end
-    end
-    
+%% non-maximum suppression
+
+%non max suppression for each scale_space
+for i = 1:level
+    max_space(:,:,i) = ordfilt2(scale_space(:,:,i), suppression_size^2, ones(suppression_size));
 end
+
+%non max suppression between scales and threshold
+for i = 1:level
+    max_space(:,:,i) = max(max_space(:,:,max(i-1,1):min(i+1,level)),[],3);
+end
+max_space = max_space .* (max_space == scale_space);
+
+cx = [];   
+cy = [];   
+rad = [];
+for i = 1 : level
+    [rows, cols] = find(max_space(:,:,i) >= threshold);
+    tmp_rad = sigma * k^(i-1) * sqrt(2); 
+    tmp_rad = repmat(tmp_rad, length(rows), 1);
+    cx = [cx; cols];
+    cy = [cy; rows];
+    rad = [rad; tmp_rad];
+end
+
+show_all_circles(img, cx, cy, rad);
+
+end
+
+function show_all_circles(I, cx, cy, rad, color, ln_wid)
+%% I: image on top of which you want to display the circles
+%% cx, cy: column vectors with x and y coordinates of circle centers
+%% rad: column vector with radii of circles. 
+%% The sizes of cx, cy, and rad must all be the same
+%% color: optional parameter specifying the color of the circles
+%%        to be displayed (red by default)
+%% ln_wid: line width of circles (optional, 1.5 by default
+
+if nargin < 5
+    color = 'r';
+end
+
+if nargin < 6
+   ln_wid = 1.5;
+end
+
+imshow(I); hold on;
+
+theta = 0:0.1:(2*pi+0.1);
+cx1 = cx(:,ones(size(theta)));
+cy1 = cy(:,ones(size(theta)));
+rad1 = rad(:,ones(size(theta)));
+theta = theta(ones(size(cx1,1),1),:);
+X = cx1+cos(theta).*rad1;
+Y = cy1+sin(theta).*rad1;
+line(X', Y', 'Color', color, 'LineWidth', ln_wid);
+
+title(sprintf('%d circles', size(cx,1)));
 
 end
