@@ -68,4 +68,14 @@ end
 
 show_all_circles(img, cx, cy, rad);
 
+%Plot response of LoG at chosen keypoint
+% keypoint = 23;
+% x = cx(keypoint);
+% y = cy(keypoint);
+% 
+% val = scale_space(y, x, :);
+% fig = reshape(val,1,[]);
+% figure;
+% plot(1:level,fig);
+
 end
