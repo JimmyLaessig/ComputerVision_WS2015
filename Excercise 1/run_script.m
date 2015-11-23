@@ -9,6 +9,7 @@ else
 end
 
 if ~exist(dir, 'dir') && save == true
+    fprintf('Creating directory %s to save files', dir);
     mkdir(dir);
 end
 
