@@ -1,12 +1,25 @@
-function Assignment3
-img = im2double(imread('Data\tree.jpg'));
+function Assignment3(pic_name, threshold, supp_size)
+
+if ~exist('threshold','var') || isempty(threshold)
+  threshold=0.1;
+end
+
+if ~exist('supp_size','var') || isempty(supp_size)
+  supp_size=10;
+end
+
+img = im2double(imread(strcat('Data\', pic_name)));
+
 if size(img,3) == 3
     img = rgb2gray(img);
 end
-logBlobDetector(img);
+
+logBlobDetector(img, threshold, supp_size);
+
 end
 
-function logBlobDetector( img )
+%% Perform LoG Blob Detector
+function logBlobDetector(img, threshold, suppression_size)
 % Performs the LoG Blob Detector
 % img ... the image for the blob detection
 
@@ -15,8 +28,8 @@ k = 1.25; % multiplication value
 level = 10;
 scale_space = zeros(size(img,1),size(img,2),level);
 max_space = scale_space;
-threshold = 0.001;
-suppression_size = 10;
+%threshold = 0.001;
+%suppression_size = 10;
 
 for i = 1 : level 
     sigma2 = sigma * k^(i-1);
@@ -53,37 +66,5 @@ for i = 1 : level
 end
 
 show_all_circles(img, cx, cy, rad);
-
-end
-
-function show_all_circles(I, cx, cy, rad, color, ln_wid)
-%% I: image on top of which you want to display the circles
-%% cx, cy: column vectors with x and y coordinates of circle centers
-%% rad: column vector with radii of circles. 
-%% The sizes of cx, cy, and rad must all be the same
-%% color: optional parameter specifying the color of the circles
-%%        to be displayed (red by default)
-%% ln_wid: line width of circles (optional, 1.5 by default
-
-if nargin < 5
-    color = 'r';
-end
-
-if nargin < 6
-   ln_wid = 1.5;
-end
-
-imshow(I); hold on;
-
-theta = 0:0.1:(2*pi+0.1);
-cx1 = cx(:,ones(size(theta)));
-cy1 = cy(:,ones(size(theta)));
-rad1 = rad(:,ones(size(theta)));
-theta = theta(ones(size(cx1,1),1),:);
-X = cx1+cos(theta).*rad1;
-Y = cy1+sin(theta).*rad1;
-line(X', Y', 'Color', color, 'LineWidth', ln_wid);
-
-title(sprintf('%d circles', size(cx,1)));
 
 end

@@ -1,22 +1,45 @@
-function Assignment2(pic_name, k, spatial)
+function Assignment2(pic_name, k, spatial, threshold, maxIter)
 
 img = im2double(imread(strcat('Data\', pic_name)));
 
+if ~exist('k','var') || isempty(k)
+  k=5;
+end
+
+if ~exist('spatial','var') || isempty(spatial)
+  spatial=false;
+end
+
+if ~exist('threshold','var') || isempty(threshold)
+  threshold=0.01;
+end
+
+if ~exist('maxIter','var') || isempty(maxIter)
+  maxIter=1;
+end
 
 
 % Create Feature Vector
-features = createFeatureVector(img, false);
+features = createFeatureVector(img, spatial);
+
 % Perform kNN
-[classification, centroids] = kNN(features, 5, 1);
+[classification, centroids] = kNN(features, k, maxIter, threshold);
+
 % Plot Results
 plotResults(classification, img, centroids);
+
 end
 
 
 function [features] = createFeatureVector(img, useSpatial)
 % INPUT
-% img -> the image to be converted into a 2D feature vector
-% useSpatial-> true if the coordinates should be treated as features too
+% img        ... the image to be converted into a 2D feature vector
+% useSpatial ... true if the coordinates should be treated as features too
+%
+% OUTPUT
+% features ... 
+
+
 %% Create Feature vector
 [height, width, ~] = size(img);
 
@@ -43,25 +66,29 @@ if(useSpatial == true)
     
     features = [r g b x(:) y(:)];
 end
+
 end
 
 
-function[classification, centroids] = kNN(samples, k, maxIterations)
+function[classification, centroids] = kNN(samples, k, maxIterations, th)
 % Input
-% img -> the image to be classified
-% numClasses -> number of classes
-% useSpatial -> determines whether to use spatial information or not
-% maxIterations -> number of maximum iterations if the algorithm does not
-% convert
+% img           ... the image to be classified
+% numClasses    ... number of classes
+% useSpatial    ... determines whether to use spatial information or not
+% maxIterations ... number of maximum iterations if the algorithm does not
+%                   convert
+%
 % OUTPUT
-% classification -> class labels for all elements in img
-% centroids -> the centroid data points of each cluster
+% classification ... class labels for all elements in img
+% centroids      ... the centroid data points of each cluster
 
 % Number of features
 [numSamples, numFeatures] = size(samples);
+
 % Create empty classifications
 classification = NaN(numSamples, 1);
 distances = NaN(numSamples, k);
+
 % Create random centroids
 %rng(2,'twister');
 centroids = rand(k, numFeatures);
@@ -80,15 +107,17 @@ for i = 1:maxIterations
     
     % Calculate new Centroids
     newCentroids = calculateCentroids(classification, samples, k, numSamples, numFeatures);
-    %
+    
     % Terminate algorithm if no change occured or max iterations is reached
-    if(centroidsChanged(centroids, newCentroids, 0.01) == false)
+    if(centroidsChanged(centroids, newCentroids, th) == false)
         break;
     end
+    
     % Apply new Centroids
     centroids = newCentroids;
     
 end
+
 end
 
 
@@ -121,13 +150,14 @@ end
 for i=1:k
     centroids(i,:) = centroids(i,:) / numClasses(i);
 end
+
 end
 
 
 %% Determines if the new centroids differ from the old centroids, capped by threshold
 function[changed] = centroidsChanged(oldCentroids, newCentroids, threshold)
 % TODO: Implement this function correctly
-k = size(oldCentroids, 2);
+%k = size(oldCentroids, 2);
 % Calculate differences of old to new centroids
 diff = sqrt(sum(abs((oldCentroids - newCentroids)').^2,2));
 
