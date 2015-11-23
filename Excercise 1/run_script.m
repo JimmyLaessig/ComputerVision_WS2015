@@ -9,7 +9,7 @@ else
 end
 
 if ~exist(dir, 'dir') && save == true
-    fprintf('Creating directory %s to save files', dir);
+    fprintf('Creating directory %s to save files\n', dir);
     mkdir(dir);
 end
 
@@ -168,6 +168,7 @@ end
 path = strcat('Data\', filename, '.jpg');
 
 if ~exist(path, 'file')
+    fprintf('Creating file %s\n', filename);
     path = strcat('Data\', img, '.jpg');
     rescaled = imread(path);
     rescaled = imresize(rescaled, scale);
