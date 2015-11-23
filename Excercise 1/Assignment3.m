@@ -20,8 +20,9 @@ end
 
 %% Perform LoG Blob Detector
 function logBlobDetector(img, threshold, suppression_size)
-% Performs the LoG Blob Detector
-% img ... the image for the blob detection
+% img              ... the image for the blob detection
+% threshold        ...
+% suppression_size ...
 
 sigma = 2; % initial scale
 k = 1.25; % multiplication value
