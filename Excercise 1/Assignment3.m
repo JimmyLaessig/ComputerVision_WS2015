@@ -8,7 +8,7 @@ if ~exist('supp_size','var') || isempty(supp_size)
   supp_size=10;
 end
 
-img = im2double(imread(strcat('Data\', pic_name)));
+img = im2double(imread(strcat('Data\', pic_name, '.jpg')));
 
 if size(img,3) == 3
     img = rgb2gray(img);

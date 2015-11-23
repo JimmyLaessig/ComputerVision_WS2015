@@ -96,7 +96,7 @@ centroids = rand(k, numFeatures);
 
 % Repeat as long as the centroids change
 for i = 1:maxIterations
-    disp(['Iteration: ', sprintf('%d', i) ]);
+    %disp(['Iteration: ', sprintf('%d', i) ]);
     % Calculate Distance for each sample to each centroid
     for class=1:k
         distances(:, class) = calcDistances(samples, centroids(class,:), numSamples);
