@@ -1,21 +1,22 @@
+
 function Assignment2(pic_name, k, spatial, threshold, maxIter)
 
 img = im2double(imread(strcat('Data\', pic_name)));
 
 if ~exist('k','var') || isempty(k)
-  k=5;
+  k = 4;
 end
 
 if ~exist('spatial','var') || isempty(spatial)
-  spatial=false;
+  spatial = false;
 end
 
 if ~exist('threshold','var') || isempty(threshold)
-  threshold=0.01;
+  threshold = 0.003;
 end
 
 if ~exist('maxIter','var') || isempty(maxIter)
-  maxIter=1;
+  maxIter = 10;
 end
 
 
