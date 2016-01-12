@@ -72,7 +72,7 @@ for i = 1:count-1
     matching_points2 = points2(:, indices2)';
     
     % Plot Matches
-    fig = match_plot(imagesRGB(:,:,:,i), imagesRGB(:,:,:,2), matching_points1, matching_points2);
+    fig = match_plot(imagesRGB(:,:,:,i), imagesRGB(:,:,:,i+1), matching_points1, matching_points2);
     set(fig, 'name', ['Matching without RANSAC: ', name, num2str(i), ' to ', name, num2str(i+1)]);
     
     %% Perform RANSAC scheme
