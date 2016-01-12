@@ -12,7 +12,7 @@ function ImageStitching(name, count, datatype)
 % Image sequence is stored in two arrays, one containing the reference
 % images in RGB, the other the processing images in greyscale
 path =  strcat('ass4_data\', name, '1.', datatype);
-
+n = 100;
 tmp = imread(path);
 
 imagesRGB = zeros(size(tmp,1),size(tmp,2), 3,count);
@@ -56,25 +56,61 @@ end
 for i = 1:count-1
     [matches,scores] = vl_ubcmatch(descriptorArray{i}, descriptorArray{i+1});
     
-    % Extract data feature coordinates of the two images
-    allPoints1 = featureArray{i}([1,2],:)';
-    allPoints2 = featureArray{i+1}([1,2],:)';
+    % SIFT Features for the two images
+    features1 = featureArray{i};
+    features2 = featureArray{i+1};
     
-    % Extract indices of matches into singular array
-    indices1 = matches(1,:)';
-    indices2 = matches(2,:)';
+    % All data points of the image features
+    points1 = features1([1,2],:);
+    points2 = features2([1,2],:);
     
-    % Extract feature points with the certain indices
-    points1 = zeros(size(indices1, 1), 2);
-    points1(:,:) = allPoints1(indices1, :);
+    % All data points of the matching features
+    indices1 = matches(1,:);
+    indices2 = matches(2,:);
     
-    points2 = zeros(size(indices2, 1), 2);
-    points2(:,:) = allPoints2(indices2,:);
+    matching_points1 = points1(:, indices1)';
+    matching_points2 = points2(:, indices2)';
     
-    % Plot Results
-    h = match_plot(imagesRGB(:,:,:,i), imagesRGB(:,:,:,2), points1, points2);    
-    set(h, 'name', ['Matching ', name, num2str(i),'.', datatype,' to ', name, num2str(i+1),'.', datatype]);
+    % Plot Matches
+    fig = match_plot(imagesRGB(:,:,:,i), imagesRGB(:,:,:,2), matching_points1, matching_points2);
+    set(fig, 'name', ['Matching without RANSAC: ', name, num2str(i), ' to ', name, num2str(i+1)]);
+    
+    %% Perform RANSAC scheme
+    % Store transform and number of inliers for each iteration
+    TFORM = 0;
+    num_inliers = 0;
+    
+    for j=1:n
+        % Randomly choose four matches
+        [samples1, indices] = datasample(matching_points1, 4);
+        samples2 = matching_points2(indices, :);
+        
+        try
+            % Estimate homography
+            TFORM_current = cp2tform(samples1, samples2, 'projective');
+            % Transform matching points
+            [x, y]= tformfwd(TFORM_current, matching_points1(:,1), matching_points1(:,2));
+            transformed_matching_points_1 = horzcat(x,y);
+            % Calculate Euclidean distances
+            distances = (sum(((transformed_matching_points_1-matching_points2).^2), 2)).^0.5;
+            % Remove all values over the threshold
+            distances(distances >= 5) = 0;
+            % Set all values beneath the threshold to 1
+            distances(distances ~=0) = 1;
+            
+            num_inliers_current = sum(distances);
+            
+            if(num_inliers_current > num_inliers)
+                num_inliers = num_inliers_current;
+                TFORM  = TFORM_current;
+            end                   
+        end
+    end
+    % Transform the image onto the second image using the calculated TFORM
+    [height1, width1] = size(imagesRGB(:,:,1,i));
+    [height2, width2] = size(imagesRGB(:,:,1,i+1));
+    scale = [height1 / height2, width1 / width2];
+    img = imtransform(imagesRGB(:,:,:,i), TFORM, 'XData',[1 width2], 'YData',[1 height2], 'XYScale', scale);
+    
 end
 end
-
-
