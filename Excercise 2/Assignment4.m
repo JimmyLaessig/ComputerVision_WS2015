@@ -17,9 +17,11 @@ tmp = imread(path);
 
 imagesRGB = zeros(size(tmp,1),size(tmp,2), 3,count);
 imagesGREY = zeros(size(tmp,1), size(tmp,2), count);
+imagesInfo = cell(count, 1);
 
 imagesRGB(:,:,:,1) = im2double(tmp);
 imagesGREY(:,:,1) = rgb2gray(tmp);
+imagesInfo{1} = imfinfo(path);
 
 for i=2:count
     path =  strcat('ass4_data\', name, num2str(i),'.', datatype);
@@ -27,7 +29,7 @@ for i=2:count
     imagesRGB(:,:,:,i) = im2double(tmp);
     % Do NOT normalize greyscale image to the range of 0-1 since vl_sift needs the range to be normalized to 0-255
     imagesGREY(:,:,i) = rgb2gray(tmp);
-    
+    imagesInfo{i} = imfinfo(path);
 end
 
 %% TASK A - SIFT Interest Point Detection
@@ -123,8 +125,12 @@ figure('name', [name, ': Images transformed onto consecutive neighbor'], 'positi
 for i = 1:count-1
     subplot(1, count-1, i);
     
-    [height1, width1] = size(imagesRGB(:,:,1,i));
-    [height2, width2] = size(imagesRGB(:,:,1,i+1));
+    height1 = imagesInfo{i}.Height;
+    width1 = imagesInfo{i}.Width;
+    
+    height2 = imagesInfo{i+1}.Height;
+    width2 = imagesInfo{i+1}.Width;
+    
     scale = [height1 / height2, width1 / width2];
     img = imtransform(imagesRGB(:,:,:,i), transforms{i}, 'XData',[1 width2], 'YData',[1 height2], 'XYScale', scale);
     imshow(img);
@@ -135,6 +141,7 @@ end
 
 % Reference image index
 refIndex = ceil(count / 2);
+homographies = cell(count, 1);
 for i = 1:count
     
     % Initialize Transform as identity matrix(Creating identity matrix)
@@ -143,7 +150,6 @@ for i = 1:count
     if (i == refIndex)
         % Do not transform the reference image since all other images are
         % aligned to it
-        continue;
         
     elseif (i < refIndex)
         % Index is smaller then reference index (left of it), use regular transforms
@@ -163,12 +169,36 @@ for i = 1:count
             transform.tdata.Tinv = transform.tdata.Tinv * transforms{j}.tdata.Tinv;
         end
         % Set the inverse as regular matrix
-        transform.tdata.T = transform.tdata.Tinv;       
+        transform.tdata.T = transform.tdata.Tinv;
     end
     
     % Calculate new inverse Transform (just in case)
     transform.tdata.tInv = inv(transform.tdata.T);
-    % TODO: Transform image here with the calculated TFORM
+    
+    homographies{i} = transform;
     
 end
+
+% Estimate dimensions of output image
+corners = zeros(count * 4, 3);
+for i = 1:count
+    height = imagesInfo{i}.Height;
+    width = imagesInfo{i}.Width;
+    
+    corners ((i-1) * 4 + 1, :) = homographies{i}.tdata.T * [1; 1; 1];
+    corners ((i-1) * 4 + 2, :) = homographies{i}.tdata.T * [height; 1; 1];
+    corners ((i-1) * 4 + 3, :) = homographies{i}.tdata.T * [1; width; 1];
+    corners ((i-1) * 4 + 4, :) = homographies{i}.tdata.T * [height; width; 1];    
+     
+end
+
+%corners(:,1) = corners(:,1) ./ corners(:,3);
+%corners(:,2) = corners(:,2) ./ corners(:,3);
+%corners(:,3) = corners(:,3) ./ corners(:,3);
+
+minX = min(corners(:,1));
+maxX = max(corners(:,1));
+minY = min(corners(:,2));
+maxY = max(corners(:,2));
+
 end
