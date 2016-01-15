@@ -4,13 +4,13 @@ warning('off','all');
 folder_train = 'ass5_data\train';
 folder_test = 'ass5_data\test';
 
-% tic;
-% C = BuildVocabulary(folder_train, 50);
-% bVoc = toc;
+tic;
+C = BuildVocabulary(folder_train, 50);
+bVoc = toc;
 
-% tic;
-% [training, group] = BuildKNN(folder_train,C);
-% bKnn = toc;
+tic;
+[training, group] = BuildKNN(folder_train,C);
+bKnn = toc;
 
 tic;
 conf_matrix = ClassifyImages(folder_test,C,training,group);
