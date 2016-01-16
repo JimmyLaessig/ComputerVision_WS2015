@@ -30,7 +30,13 @@ for i = loop_start:num_of_dirs
         
         file_path = strcat(path,'\',files(j).name);
         
-        I = single(imread(file_path));
+        I = imread(file_path);
+        
+        if size(I,3) > 1
+            I = rgb2gray(I);
+        end
+        
+        I = single(I);
         
         % compute dense SIFT from test directory
         % 128xMx1
