@@ -32,6 +32,8 @@ for i = loop_start:num_of_dirs
         
         I = imread(file_path);
         
+        % for own test images, if image has depth, then it will be
+        % converted to a gray image
         if size(I,3) > 1
             I = rgb2gray(I);
         end
