@@ -27,7 +27,6 @@ for i = loop_start:num_of_dirs
     
     % for each images
     for j = loop_start:num_of_files
-        
         file_path = strcat(path,'\',files(j).name);
         
         I = imread(file_path);
@@ -66,6 +65,8 @@ for i = loop_start:num_of_dirs
         % fill output matrix with number of matches
         % correct match: group_index = class
         conf_matrix(group_index,class) = conf_matrix(group_index,class) + 1;
+        %filename = strcat(files(j).name);
+        %fprintf('name: %s class: %d :: %d \n', filename, class, group_index);
     end
     
     group_index = group_index + 1;
