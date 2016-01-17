@@ -190,25 +190,51 @@ corners(:,1) = corners(:,1) ./ corners(:,3);
 corners(:,2) = corners(:,2) ./ corners(:,3);
 corners(:,3) = corners(:,3) ./ corners(:,3);
 
-minWidth =  floor(min(corners(:,1)));
-maxWidth =   ceil(max(corners(:,1)));
-minHeight = floor(min(corners(:,2)));
-maxHeight =  ceil(max(corners(:,2)));
-
 % Determine final dimensions using the min and max values of all
 % transformed corners
+minWidth  = floor(min(corners(:,1)));
+minHeight = floor(min(corners(:,2)));
+maxWidth  = ceil(max(corners(:,1)));
+maxHeight = ceil(max(corners(:,2)));
+
 image_width = maxWidth - minWidth;
 image_height = maxHeight - minHeight;
 
 % Init final image with the calculated dimensions
 image_stitched = zeros(image_height + 1, image_width + 1, 3);
+image_alpha = zeros(image_height + 1, image_width + 1);
 % Transform all images onto the base plane
-for i = 1:count
-    img_transformed = imtransform(imagesRGB{i}, homographies{i}, 'XData',[minWidth maxWidth], 'YData',[minHeight maxHeight]);
-    %mask = (img_transformed > 0);
-    image_stitched = image_stitched + img_transformed;
+for i = 1:count    
+   
+     width = imagesInfo{i}.Width;
+    height = imagesInfo{i}.Height;
+
+    % Create alpha channel with white borders
+    alpha = zeros(size(imagesGREY{i}));
+    alpha(1,:) = 1;
+    alpha(:,1) = 1;
+    alpha(height,:) = 1;
+    alpha(:, width) = 1;
+    % Calculate distances to the white border
+    alpha = bwdist(alpha);
+    % Normalize distances to [0,1]
+    alpha = alpha / max(alpha(:));
+     % Transform the image onto the base plane
+    img_transformed = imtransform(imagesRGB{i}, homographies{i}, 'XData',[minWidth maxWidth], 'YData',[minHeight maxHeight]);   
+    alpha_transformed = imtransform(alpha, homographies{i}, 'XData',[minWidth maxWidth], 'YData',[minHeight maxHeight]);
+    
+    % Multiply current color value with the current alpha values
+    image_stitched = image_stitched + img_transformed .* repmat(alpha_transformed,1 ,1 ,3);
+    % add current alpha values to the images total alpha values
+    image_alpha = image_alpha + alpha_transformed;
 end
 
+% Divide the color channels by the alpha values
+image_stitched(:,:,1) = image_stitched(:,:,1) ./ image_alpha;
+image_stitched(:,:,2) = image_stitched(:,:,2) ./ image_alpha;
+image_stitched(:,:,3) = image_stitched(:,:,3) ./ image_alpha;
+
+% Show Image
 figure('name', 'Stitched image');
 imshow(image_stitched);
 end
