@@ -176,13 +176,14 @@ end
 corners = zeros(count * 4, 3);
 for i = 1:count
     
-    x = imagesInfo{i}.Height;
-    y = imagesInfo{i}.Width;
+    transform = homographies{i};
+    x = imagesInfo{i}.Width;
+    y = imagesInfo{i}.Height;
     
-    corners ((i-1) * 4 + 1, :) = [1 1 1] * homographies{i}.tdata.T;
-    corners ((i-1) * 4 + 2, :) = [x 1 1] * homographies{i}.tdata.T;
-    corners ((i-1) * 4 + 3, :) = [1 y 1] * homographies{i}.tdata.T;
-    corners ((i-1) * 4 + 4, :) = [x y 1] * homographies{i}.tdata.T ;
+    corners ((i-1) * 4 + 1, :) = [1 1 1] * transform.tdata.T;
+    corners ((i-1) * 4 + 2, :) = [x 1 1] * transform.tdata.T;
+    corners ((i-1) * 4 + 3, :) = [1 y 1] * transform.tdata.T;
+    corners ((i-1) * 4 + 4, :) = [x y 1] * transform.tdata.T;
     
 end
 % Perform projective division
@@ -204,11 +205,11 @@ image_height = maxHeight - minHeight;
 image_stitched = zeros(image_height + 1, image_width + 1, 3);
 image_alpha = zeros(image_height + 1, image_width + 1);
 % Transform all images onto the base plane
-for i = 1:count    
-   
-     width = imagesInfo{i}.Width;
+for i = 1:count
+    
+    width = imagesInfo{i}.Width;
     height = imagesInfo{i}.Height;
-
+    
     % Create alpha channel with white borders
     alpha = zeros(size(imagesGREY{i}));
     alpha(1,:) = 1;
@@ -219,8 +220,8 @@ for i = 1:count
     alpha = bwdist(alpha);
     % Normalize distances to [0,1]
     alpha = alpha / max(alpha(:));
-     % Transform the image onto the base plane
-    img_transformed = imtransform(imagesRGB{i}, homographies{i}, 'XData',[minWidth maxWidth], 'YData',[minHeight maxHeight]);   
+    % Transform the image onto the base plane
+    img_transformed = imtransform(imagesRGB{i}, homographies{i}, 'XData',[minWidth maxWidth], 'YData',[minHeight maxHeight]);
     alpha_transformed = imtransform(alpha, homographies{i}, 'XData',[minWidth maxWidth], 'YData',[minHeight maxHeight]);
     
     % Multiply current color value with the current alpha values
