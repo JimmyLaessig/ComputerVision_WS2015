@@ -27,6 +27,11 @@ for i = loop_start:num_of_dirs
     
     % for each images
     for j = loop_start:num_of_files
+        
+        if strcmp(files(j).name,'Thumbs.db')
+            continue;
+        end
+        
         file_path = strcat(path,'\',files(j).name);
         
         I = imread(file_path);
