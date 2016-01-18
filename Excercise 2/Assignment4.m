@@ -4,6 +4,7 @@ function Assignment4
 % Runs the Image Stiching assignment with the given image sequence located in
 % ass4_data folder
 ImageStitching('campus', 5, 'jpg', 100);
+%ImageStitching('officeview', 5, 'jpg', 100);
 end
 
 function ImageStitching(name, count, datatype, RANSAC_num_iterations)
@@ -77,7 +78,7 @@ for i = 1:count-1
     
     %% Perform RANSAC scheme
     num_inliers = 0;
-    
+    inlier_indices = [];
     for j = 1:RANSAC_num_iterations
         % Randomly choose four matches
         [samples1, indices] = datasample(matching_points1, 4);
@@ -107,11 +108,16 @@ for i = 1:count-1
             if(num_inliers_current > num_inliers)
                 num_inliers = num_inliers_current;
                 transforms{i}  = TFORM_current;
+                inlier_indices = find(distances);
             end
         catch
         end
     end
 end
+
+% Plot Inlier Matches
+ fig = match_plot(imagesRGB{i}, imagesRGB{i+1}, matching_points1(inlier_indices, :), matching_points2(inlier_indices, :));
+    set(fig, 'name', ['Matching after RANSAC: ', name, num2str(i), ' to ', name, num2str(i+1)]);
 
 % Transform the images onto the second image using the calculated transforms
 % The figures show the image transformed into the space of the
