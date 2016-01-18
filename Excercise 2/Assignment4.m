@@ -3,8 +3,8 @@ function Assignment4
 % to initialize vlfeat framework.
 % Runs the Image Stiching assignment with the given image sequence located in
 % ass4_data folder
-ImageStitching('campus', 5, 'jpg', 100);
-%ImageStitching('officeview', 5, 'jpg', 100);
+ImageStitching('campus', 5, 'jpg', 1000);
+%ImageStitching('officeview', 5, 'jpg', 1000);
 end
 
 function ImageStitching(name, count, datatype, RANSAC_num_iterations)
@@ -113,11 +113,10 @@ for i = 1:count-1
         catch
         end
     end
-end
-
-% Plot Inlier Matches
+    % Plot Inlier Matches
  fig = match_plot(imagesRGB{i}, imagesRGB{i+1}, matching_points1(inlier_indices, :), matching_points2(inlier_indices, :));
-    set(fig, 'name', ['Matching after RANSAC: ', name, num2str(i), ' to ', name, num2str(i+1)]);
+ set(fig, 'name', ['Matching after RANSAC: ', name, num2str(i), ' to ', name, num2str(i+1)]);
+end
 
 % Transform the images onto the second image using the calculated transforms
 % The figures show the image transformed into the space of the
