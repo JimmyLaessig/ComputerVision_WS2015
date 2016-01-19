@@ -1,7 +1,7 @@
 %% Pre-requisites
 warning('off','all');
 
-file_name = 'campus';
+file_name = 'cat';
 num_files = 5;
 datatype = 'jpg';
 
@@ -13,7 +13,7 @@ datatype = 'jpg';
 plotFeatures(RGB,INFO,FEATS_ARRAY);
 
 %% TaskB
-% (num_files - 1)x1 cell vector of tforms
+% (num_files - 1)x1 cell vector
 [TFORMS,MATCHES,INLIERS] = getTransforms(FEATS_ARRAY,DESCRS_ARRAY);
 plotMatches(RGB,INFO,MATCHES,INLIERS);
 
