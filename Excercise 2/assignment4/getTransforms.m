@@ -88,7 +88,8 @@ for j = 1:iterations
         transformed_matching_points_1 = horzcat(x,y);
         
         % Determine inlier by comparing euclidic distances between the
-        % old and transformed feature points to a certain threshold (e.g. 5)
+        % transformed matching points and the matching points of the untransformed
+        % second image to a certain threshold (e.g. 5)
         
         % Calculate Euclidean distances
         distances = (sum(((transformed_matching_points_1-matching_points2).^2), 2)).^0.5;

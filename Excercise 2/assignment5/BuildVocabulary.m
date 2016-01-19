@@ -5,8 +5,8 @@ dirs = dir(folder);
 
 % matrix to save descriptors horizontaly
 % 128x80000x1
-descriptors = zeros(128,800 * 100);
-
+%descriptors = zeros(128,800 * 100);
+descriptors = zeros(128,0);
 % start = 3 to ignore '.' and '..' directories
 loop_start = 3;
 
@@ -14,8 +14,8 @@ loop_start = 3;
 num_of_dirs = size(dirs,1);
 
 % positions to save computed DESCRS in descriptors
-des_start = 1;
-des_end = 100;
+% des_start = 1;
+% des_end = 100;
 
 % for each directory
 for i = loop_start:num_of_dirs
@@ -43,16 +43,18 @@ for i = loop_start:num_of_dirs
         [~, DESCRS] = vl_dsift(I,'step',steps,'fast');
         
         % get 100 random indices
-        indices = randsample((1:size(DESCRS,2)),100);
+        %indices = randsample((1:size(DESCRS,2)),100);
         
         % get 100 random descriptor values
         % 128x100x1
-        DESCRS = DESCRS(:,indices);
+        %DESCRS = DESCRS(:,indices);
         
         % save them in descriptors matrix
-        descriptors(:,des_start:des_end) = DESCRS;
-        des_start = des_start + 100;
-        des_end = des_end + 100;
+%         descriptors(:,des_start:des_end) = DESCRS;
+%         des_start = des_start + 100;
+%         des_end = des_end + 100;
+
+descriptors = cat(2,descriptors,DESCRS);
         
     end
 end

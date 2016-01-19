@@ -1,9 +1,15 @@
+function main(file_name,num_files,datatype)
+
 %% Pre-requisites
 warning('off','all');
 
-file_name = 'cat';
-num_files = 5;
-datatype = 'jpg';
+if nargin < 2
+    num_files = 5;
+end
+
+if nargin < 3
+    datatype = 'jpg';
+end
 
 % num_filesx1 cell vectors with matrices
 [RGB,GREY,INFO] = readData(file_name,num_files,datatype);
@@ -24,3 +30,5 @@ PANORAMA = getPanorama(RGB,INFO,TFORMS);
 % Show Image
 figure('name', 'Stitched image');
 imshow(PANORAMA);
+
+end
