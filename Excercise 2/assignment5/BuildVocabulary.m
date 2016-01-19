@@ -50,11 +50,11 @@ for i = loop_start:num_of_dirs
         %DESCRS = DESCRS(:,indices);
         
         % save them in descriptors matrix
-%         descriptors(:,des_start:des_end) = DESCRS;
-%         des_start = des_start + 100;
-%         des_end = des_end + 100;
-
-descriptors = cat(2,descriptors,DESCRS);
+        %         descriptors(:,des_start:des_end) = DESCRS;
+        %         des_start = des_start + 100;
+        %         des_end = des_end + 100;
+        
+        descriptors = cat(2,descriptors,DESCRS);
         
     end
 end
