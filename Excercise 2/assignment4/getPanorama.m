@@ -112,6 +112,7 @@ HEIGHT = maxHeight - minHeight;
 VARYINGS = [minWidth;minHeight;maxWidth;maxHeight];
 
 end
+
 function[IMG] = stitchImages(RGB, HOMOGRAPHIES, PAN_CANVAS, VARYINGS, num_imgs)
 % Transforms and matches all images together WITHOUT blending
 % panorama image
