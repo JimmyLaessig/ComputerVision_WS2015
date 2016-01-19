@@ -19,6 +19,7 @@ homographies = calcHomographies(TFORMS,num_imgs);
 pan_canvas = zeros(image_height + 1, image_width + 1);
 IMG_STITCHED = blendImages(RGB,homographies,pan_canvas,vars,num_imgs);
 %IMG_STITCHED = stitchImages(RGB,homographies,pan_canvas,vars,num_imgs);
+
 end
 
 function [HOMOGRAPHIES] = calcHomographies(TFORMS,num_imgs)
@@ -113,17 +114,6 @@ VARYINGS = [minWidth;minHeight;maxWidth;maxHeight];
 end
 function[IMG] = stitchImages(RGB, HOMOGRAPHIES, PAN_CANVAS, VARYINGS, num_imgs)
 % Transforms and matches all images together WITHOUT blending
-% panorama image
-%
-% RGB ... Nx1 cell vector with the images RGB
-% HOMOGRAPHIES ... Nx1 cell vector with the transfomation information per image
-% PAN_CANVAS ... KxLx1 zero matrix used as reference to 'draw' the panorama image
-% VARYINGS ... 4x1x1 matrix containing the min and max values of width and height
-% num_imgs ... scalar number of images
-% 
-% IMG_STITCHED ... the resulting panorama image
-
-% Transforms and blends all transformed images together to a single
 % panorama image
 %
 % RGB ... Nx1 cell vector with the images RGB
