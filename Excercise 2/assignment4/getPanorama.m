@@ -18,7 +18,7 @@ homographies = calcHomographies(TFORMS,num_imgs);
 % Blend all transformed images together
 pan_canvas = zeros(image_height + 1, image_width + 1);
 IMG_STITCHED = blendImages(RGB,homographies,pan_canvas,vars,num_imgs);
-
+%IMG_STITCHED = stitchImages(RGB,homographies,pan_canvas,vars,num_imgs);
 end
 
 function [HOMOGRAPHIES] = calcHomographies(TFORMS,num_imgs)
@@ -111,6 +111,50 @@ HEIGHT = maxHeight - minHeight;
 VARYINGS = [minWidth;minHeight;maxWidth;maxHeight];
 
 end
+function[IMG] = stitchImages(RGB, HOMOGRAPHIES, PAN_CANVAS, VARYINGS, num_imgs)
+% Transforms and matches all images together WITHOUT blending
+% panorama image
+%
+% RGB ... Nx1 cell vector with the images RGB
+% HOMOGRAPHIES ... Nx1 cell vector with the transfomation information per image
+% PAN_CANVAS ... KxLx1 zero matrix used as reference to 'draw' the panorama image
+% VARYINGS ... 4x1x1 matrix containing the min and max values of width and height
+% num_imgs ... scalar number of images
+% 
+% IMG_STITCHED ... the resulting panorama image
+
+% Transforms and blends all transformed images together to a single
+% panorama image
+%
+% RGB ... Nx1 cell vector with the images RGB
+% HOMOGRAPHIES ... Nx1 cell vector with the transfomation information per image
+% PAN_CANVAS ... KxLx1 zero matrix used as reference to 'draw' the panorama image
+% VARYINGS ... 4x1x1 matrix containing the min and max values of width and height
+% num_imgs ... scalar number of images
+% 
+% IMG_STITCHED ... the resulting panorama image
+
+IMG = repmat(PAN_CANVAS,1,1,3);
+
+minWidth  = VARYINGS(1);
+minHeight = VARYINGS(2);
+maxWidth  = VARYINGS(3);
+maxHeight = VARYINGS(4);
+
+% Transform all images onto the base plane
+for i = 1:num_imgs
+    
+    % Transform the image onto the base plane
+    img_transformed = imtransform(RGB{i}, HOMOGRAPHIES{i}, 'XData',[minWidth maxWidth], 'YData',[minHeight maxHeight]);
+    
+    % Create a mask that indicates where pixel aren't set yet
+    mask = (img_transformed > 0);
+    % Multiply current color value with the current alpha values
+    IMG = mask .* img_transformed + ~mask .* IMG;
+end
+
+end
+
 
 function [IMG_STITCHED] = blendImages(RGB,HOMOGRAPHIES,PAN_CANVAS,VARYINGS,num_imgs)
 % Transforms and blends all transformed images together to a single
