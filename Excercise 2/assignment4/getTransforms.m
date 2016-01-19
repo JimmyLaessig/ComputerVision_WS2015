@@ -1,15 +1,19 @@
-function [TFORMS,MATCHES] = getTransforms(FEATS_ARRAY, DESCRS_ARRAY)
+function [TFORMS,MATCHES,INLIERS] = getTransforms(FEATS_ARRAY, DESCRS_ARRAY)
 % Compute the transformation matrix to 'transform/align' the left image to the right image
 % 
 % FEATS_ARRAY ... Nx1 cell vector with the SIFT features, only the coords are relevant [x y]
 % DESCRS_ARRAY ... Nx1 cell vector with the SIFT descriptors
 % 
-% TFORMS ... (N-1)x1 cell vector with the transformations of imgL to imgR
-% MATCHES ... (N-1)x1 cell vector with the matching points of imgL to imgR
+% TFORMS  ... (N-1)x1 cell vector with the transformations of imgL to imgR
+% MATCHES ... (N-1)x1 cell vector with 2x1 cell vectors containing
+%              the matching points of imgL to imgR
+% INLIERS ... (N-1)x1 cell vector with the inliers of a match of imgL to
+%              imgR
 
 num_imgs = numel(FEATS_ARRAY);
 TFORMS = cell(num_imgs-1, 1);
 MATCHES = cell(num_imgs-1, 1);
+INLIERS = cell(num_imgs-1, 1);
 
 for i = 1:num_imgs-1
     
@@ -20,7 +24,7 @@ for i = 1:num_imgs-1
     MATCHES{i} = matching_points;
     
     % Perform RANSAC and save the resulting TFORM
-    TFORMS{i} = RANSAC(matching_points,1000);
+    [TFORMS{i}, INLIERS{i}] = RANSAC(matching_points,1000);
 end
 
 end
@@ -56,7 +60,7 @@ matching_points{2} = points2(:, indices2)';
 
 end
 
-function [TFORM] = RANSAC(matching_points, iterations)
+function [TFORM,INLIER_IDX] = RANSAC(matching_points, iterations)
 % Performs RANSAC algorithm to detect the most suitable image transformation
 %
 % matching_points ... 2x1 cell vector with 2xN matrices containing the matching points per image
@@ -99,9 +103,11 @@ for j = 1:iterations
         if(num_inliers_current > num_inliers)
             num_inliers = num_inliers_current;
             TFORM  = TFORM_current;
+            INLIER_IDX = find(distances);
         end
     catch
     end
 end
 
 end
+
